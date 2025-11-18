@@ -35,17 +35,17 @@ type Template = {
 const BASE = 980
 // Update these coordinates to match your new template's photo area
 const EXACT_FRAME = {
-  x: 593, // X position of photo area (adjust for your template)
-  y: 390, // Y position of photo area (adjust for your template)
-  w: 245, // Width of photo area
-  h: 245, // Height of photo area
+  x: 602, // X position of photo area (adjust for your template)
+  y: 443, // Y position of photo area (adjust for your template)
+  w: 230, // Width of photo area
+  h: 250, // Height of photo area
 }
 
 // Update these coordinates to match your template's name area
 const NAME_AREA = {
-  x: 575, // X position of name area (adjust for your template)
-  y: 630, // Y position of name area (adjust for your template)
-  w: 295, // Width of name area
+  x: 565, // X position of name area (adjust for your template)
+  y: 700, // Y position of name area (adjust for your template)
+  w: 300, // Width of name area
   h: 95, // Height of name area
 }
 
@@ -53,14 +53,14 @@ const TEMPLATES: Template[] = [
   {
     id: "speaking",
     title: "I am Speaking at",
-    src: "/images/speaker-session-container-1.png",
+    src: "/images/Speaker.png",
     innerAnchorPx: { x: EXACT_FRAME.x, y: EXACT_FRAME.y },
     innerSizePx: { w: EXACT_FRAME.w, h: EXACT_FRAME.h },
   },
   {
     id: "attending",
     title: "Thrilled to be attending",
-    src: "/images/Attendee.jpg",
+    src: "/images/Attendee.png",
     innerAnchorPx: { x: EXACT_FRAME.x, y: EXACT_FRAME.y },
     innerSizePx: { w: EXACT_FRAME.w, h: EXACT_FRAME.h },
   },
@@ -363,44 +363,44 @@ export default function Page() {
             crossOrigin="anonymous"
           />
         </header>
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#FF9900]">ASCDPU - Badge Maker</h1>
-          <p className="text-lg text-gray-700 mt-3">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-[#FF9900]">ASCDPU - Badge Maker</h1>
+          <p className="text-sm sm:text-lg text-gray-700 mt-2 sm:mt-3">
             Create your AWS Student Community Day badge with ease
           </p>
         </div>
 
         {/* Step 1: Template */}
-        <Card className="bg-white border-gray-200 shadow-lg mb-8">
-          <CardHeader>
-            <CardTitle className="text-gray-900 text-xl">Choose Badge Type</CardTitle>
+        <Card className="bg-white border-gray-200 shadow-lg mb-6 sm:mb-8">
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="text-gray-900 text-lg sm:text-xl">Choose Badge Type</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs value={templateId} onValueChange={(v) => setTemplateId(v as TemplateId)}>
-              <TabsList className="bg-gray-100 w-full max-w-80 mx-auto h-12">
+              <TabsList className="bg-gray-100 w-full max-w-80 mx-auto h-10 sm:h-12">
                 <TabsTrigger
                   value="speaking"
-                  className="flex-1 h-10 data-[state=active]:bg-[#FF9900] data-[state=active]:text-white"
+                  className="flex-1 h-8 sm:h-10 data-[state=active]:bg-[#FF9900] data-[state=active]:text-white text-xs sm:text-sm"
                 >
                   Speaker
                 </TabsTrigger>
                 <TabsTrigger
                   value="attending"
-                  className="flex-1 h-10 data-[state=active]:bg-[#FF9900] data-[state=active]:text-white"
+                  className="flex-1 h-8 sm:h-10 data-[state=active]:bg-[#FF9900] data-[state=active]:text-white text-xs sm:text-sm"
                 >
                   Attendee
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="speaking" className="mt-6">
-                <div className="bg-orange-50 rounded-lg p-6 border border-orange-200">
-                  <h3 className="text-lg font-semibold text-[#FF9900] mb-2">Speaker Badge</h3>
-                  <p className="text-gray-600">This will generate an Speaking post.</p>
+              <TabsContent value="speaking" className="mt-4 sm:mt-6">
+                <div className="bg-orange-50 rounded-lg p-4 sm:p-6 border border-orange-200">
+                  <h3 className="text-base sm:text-lg font-semibold text-[#FF9900] mb-1 sm:mb-2">Speaker Badge</h3>
+                  <p className="text-gray-600 text-sm sm:text-base">This will generate an Speaking post.</p>
                 </div>
               </TabsContent>
-              <TabsContent value="attending" className="mt-6">
-                <div className="bg-orange-50 rounded-lg p-6 border border-orange-200">
-                  <h3 className="text-lg font-semibold text-[#FF9900] mb-2">Attendee Badge</h3>
-                  <p className="text-gray-600">This will generate an Attending post.</p>
+              <TabsContent value="attending" className="mt-4 sm:mt-6">
+                <div className="bg-orange-50 rounded-lg p-4 sm:p-6 border border-orange-200">
+                  <h3 className="text-base sm:text-lg font-semibold text-[#FF9900] mb-1 sm:mb-2">Attendee Badge</h3>
+                  <p className="text-gray-600 text-sm sm:text-base">This will generate an Attending post.</p>
                 </div>
               </TabsContent>
             </Tabs>
