@@ -189,6 +189,16 @@ export default function Page() {
       ctx.imageSmoothingQuality = "high"
       ctx.drawImage(userImg, drawX, drawY, drawW, drawH)
       ctx.restore()
+      
+      // Draw border around photo area
+      ctx.save()
+      const borderWidth = 2 * (W / BASE) // 2px border scaled to canvas size
+      ctx.strokeStyle = "#000000"
+      ctx.lineWidth = borderWidth
+      ctx.beginPath()
+      ctx.roundRect(inner.x, inner.y, inner.w, inner.h, radius)
+      ctx.stroke()
+      ctx.restore()
     }
 
     // Draw user name if provided in repositionable block
@@ -242,11 +252,35 @@ export default function Page() {
     }
   }, [template, templateImg, userImg, zoom, offset, userName])
 
-  // Pointer handlers for pan
+  // Pointer handlers for pan (only within photo area)
   const onPointerDown = (e: React.PointerEvent) => {
-    setPanning(true)
-    ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
-    lastPoint.current = { x: e.clientX, y: e.clientY }
+    const canvas = canvasRef.current
+    if (!canvas || !templateImg) return
+    
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    const canvasX = (e.clientX - rect.left) * scaleX
+    const canvasY = (e.clientY - rect.top) * scaleY
+    
+    // Check if click is within photo area
+    const W = templateImg.naturalWidth || templateImg.width
+    const H = templateImg.naturalHeight || templateImg.height
+    const innerScaleX = W / BASE
+    const innerScaleY = H / BASE
+    const inner = {
+      x: Math.round(template.innerAnchorPx.x * innerScaleX),
+      y: Math.round(template.innerAnchorPx.y * innerScaleY),
+      w: Math.round(template.innerSizePx.w * innerScaleX),
+      h: Math.round(template.innerSizePx.h * innerScaleY),
+    }
+    
+    if (canvasX >= inner.x && canvasX <= inner.x + inner.w && 
+        canvasY >= inner.y && canvasY <= inner.y + inner.h) {
+      setPanning(true)
+      ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
+      lastPoint.current = { x: e.clientX, y: e.clientY }
+    }
   }
   const onPointerMove = (e: React.PointerEvent) => {
     if (!panning || !lastPoint.current) return
@@ -265,11 +299,35 @@ export default function Page() {
     }
   }
 
-  // Wheel zoom (clamped so 1.0 never reveals gaps)
+  // Wheel zoom (only within photo area)
   const onWheelZoom = (e: React.WheelEvent) => {
-    e.preventDefault()
-    const delta = e.deltaY > 0 ? -0.05 : 0.05
-    setZoom((z) => clamp(Number.parseFloat((z + delta).toFixed(2)), 1, 3))
+    const canvas = canvasRef.current
+    if (!canvas || !templateImg) return
+    
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    const canvasX = (e.clientX - rect.left) * scaleX
+    const canvasY = (e.clientY - rect.top) * scaleY
+    
+    // Check if mouse is within photo area
+    const W = templateImg.naturalWidth || templateImg.width
+    const H = templateImg.naturalHeight || templateImg.height
+    const innerScaleX = W / BASE
+    const innerScaleY = H / BASE
+    const inner = {
+      x: Math.round(template.innerAnchorPx.x * innerScaleX),
+      y: Math.round(template.innerAnchorPx.y * innerScaleY),
+      w: Math.round(template.innerSizePx.w * innerScaleX),
+      h: Math.round(template.innerSizePx.h * innerScaleY),
+    }
+    
+    if (canvasX >= inner.x && canvasX <= inner.x + inner.w && 
+        canvasY >= inner.y && canvasY <= inner.y + inner.h) {
+      e.preventDefault()
+      const delta = e.deltaY > 0 ? -0.05 : 0.05
+      setZoom((z) => clamp(Number.parseFloat((z + delta).toFixed(2)), 1, 3))
+    }
   }
 
   // Download
@@ -319,16 +377,16 @@ export default function Page() {
           </CardHeader>
           <CardContent>
             <Tabs value={templateId} onValueChange={(v) => setTemplateId(v as TemplateId)}>
-              <TabsList className="bg-gray-100 w-80 mx-auto h-12">
+              <TabsList className="bg-gray-100 w-full max-w-80 mx-auto h-12">
                 <TabsTrigger
                   value="speaking"
-                  className="w-40 h-10 data-[state=active]:bg-[#FF9900] data-[state=active]:text-white"
+                  className="flex-1 h-10 data-[state=active]:bg-[#FF9900] data-[state=active]:text-white"
                 >
                   Speaker
                 </TabsTrigger>
                 <TabsTrigger
                   value="attending"
-                  className="w-40 h-10 data-[state=active]:bg-[#FF9900] data-[state=active]:text-white"
+                  className="flex-1 h-10 data-[state=active]:bg-[#FF9900] data-[state=active]:text-white"
                 >
                   Attendee
                 </TabsTrigger>
@@ -351,18 +409,18 @@ export default function Page() {
 
         {/* Step 2: Upload & Adjust */}
         <Card className="bg-white border-gray-200 shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-gray-900 text-xl">Upload & Customize</CardTitle>
-            <CardDescription className="text-gray-700">
+          <CardHeader className="pb-4 md:pb-6">
+            <CardTitle className="text-gray-900 text-lg md:text-xl">Upload & Customize</CardTitle>
+            <CardDescription className="text-gray-700 text-sm md:text-base">
               Upload your photo and adjust the positioning
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-5">
-            <div className="bg-orange-50 rounded-xl p-6 md:p-8 border-2 border-dashed border-orange-300 text-center">
-              <div className="mb-6">
-                <ImageIcon className="h-10 w-10 md:h-12 md:w-12 text-[#FF9900] mx-auto mb-3" />
-                <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">Upload Your Photo</h3>
-                <p className="text-gray-600 text-sm">Choose a clear Photo for best results</p>
+          <CardContent className="grid gap-3 sm:gap-4 md:gap-5">
+            <div className="bg-orange-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-8 border-2 border-dashed border-orange-300 text-center">
+              <div className="mb-3 sm:mb-4 md:mb-6">
+                <ImageIcon className="h-6 w-6 sm:h-8 sm:w-8 md:h-12 md:w-12 text-[#FF9900] mx-auto mb-1 sm:mb-2 md:mb-3" />
+                <h3 className="text-xs sm:text-sm md:text-lg font-medium text-gray-900 mb-1 md:mb-2">Upload Your Photo</h3>
+                <p className="text-gray-600 text-xs md:text-sm">Choose a clear Photo for best results</p>
               </div>
               <input
                 ref={fileInputRef}
@@ -376,7 +434,7 @@ export default function Page() {
                 }}
               />
               <Button 
-                className="bg-[#FF9900] hover:bg-[#E6890A] text-white w-32 h-10 md:w-40 md:h-12 rounded-lg font-medium" 
+                className="bg-[#FF9900] hover:bg-[#E6890A] text-white w-24 h-8 sm:w-28 sm:h-9 md:w-40 md:h-12 rounded-lg font-medium text-xs sm:text-sm md:text-base" 
                 onClick={triggerUpload} 
                 type="button"
               >
@@ -384,24 +442,24 @@ export default function Page() {
               </Button>
             </div>
 
-            <div className="bg-orange-50 rounded-xl p-6 border-2 border-dashed border-orange-300">
-              <div className="mb-4">
-                <User className="h-6 w-6 text-[#FF9900] mx-auto mb-2" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2 text-center">Enter Your Name</h3>
-                <p className="text-gray-600 text-sm text-center mb-4">This will appear on your badge</p>
+            <div className="bg-orange-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border-2 border-dashed border-orange-300">
+              <div className="mb-2 sm:mb-3 md:mb-4">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[#FF9900] mx-auto mb-1 md:mb-2" />
+                <h3 className="text-sm sm:text-base md:text-lg font-medium text-gray-900 mb-1 md:mb-2 text-center">Enter Your Name</h3>
+                <p className="text-gray-600 text-xs md:text-sm text-center mb-2 sm:mb-3 md:mb-4">This will appear on your badge</p>
               </div>
               <input
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder="Enter your name"
-                className="w-full px-4 py-3 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-transparent text-center font-medium"
+                className="w-full px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-transparent text-center font-medium text-xs sm:text-sm md:text-base"
                 maxLength={30}
               />
             </div>
 
             <div
-              className="relative mx-auto w-full max-w-[500px] aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-200 cursor-grab active:cursor-grabbing touch-none select-none shadow-xl"
+              className="relative mx-auto w-full max-w-[280px] sm:max-w-[400px] md:max-w-[500px] aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-gray-50 border border-gray-200 cursor-grab active:cursor-grabbing touch-none select-none shadow-xl"
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={endPan}
@@ -418,19 +476,19 @@ export default function Page() {
             </div>
 
             <div>
-              <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-                <div className="flex items-center justify-between mb-3">
-                  <Label className="text-gray-900 font-medium">Adjust Size</Label>
-                  <span className="text-sm text-gray-600">{Math.round(zoom * 100)}%</span>
+              <div className="bg-orange-50 rounded-lg p-2 sm:p-3 md:p-4 border border-orange-200">
+                <div className="flex items-center justify-between mb-1 sm:mb-2 md:mb-3">
+                  <Label className="text-gray-900 font-medium text-xs sm:text-sm md:text-base">Adjust Size</Label>
+                  <span className="text-xs md:text-sm text-gray-600">{Math.round(zoom * 100)}%</span>
                 </div>
-                <div className="flex items-center gap-3 md:gap-4">
+                <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-orange-300 text-[#FF9900] hover:bg-orange-100 w-8 h-8 md:w-10 md:h-10 p-0"
+                    className="border-orange-300 text-[#FF9900] hover:bg-orange-100 w-6 h-6 sm:w-7 sm:h-7 md:w-10 md:h-10 p-0 flex-shrink-0"
                     onClick={() => setZoom((z) => clamp(Number.parseFloat((z - 0.1).toFixed(2)), 1, 3))}
                   >
-                    <ZoomOut className="h-4 w-4" />
+                    <ZoomOut className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4" />
                   </Button>
                   <input
                     type="range"
@@ -439,40 +497,40 @@ export default function Page() {
                     step={0.01}
                     value={zoom}
                     onChange={(e) => setZoom(clamp(Number.parseFloat(e.target.value), 1, 3))}
-                    className="flex-1 h-2 rounded-full bg-orange-200"
+                    className="flex-1 h-1.5 sm:h-2 rounded-full bg-orange-200"
                     style={{ accentColor: "#FF9900" }}
                   />
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-orange-300 text-[#FF9900] hover:bg-orange-100 w-8 h-8 md:w-10 md:h-10 p-0"
+                    className="border-orange-300 text-[#FF9900] hover:bg-orange-100 w-6 h-6 sm:w-7 sm:h-7 md:w-10 md:h-10 p-0 flex-shrink-0"
                     onClick={() => setZoom((z) => clamp(Number.parseFloat((z + 0.1).toFixed(2)), 1, 3))}
                   >
-                    <ZoomIn className="h-4 w-4" />
+                    <ZoomIn className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
-                    className="text-gray-600 hover:text-gray-900 w-8 h-8 md:w-10 md:h-10 p-0"
+                    className="text-gray-600 hover:text-gray-900 w-6 h-6 sm:w-7 sm:h-7 md:w-10 md:h-10 p-0 flex-shrink-0"
                     onClick={() => {
                       setZoom(1)
                       setOffset({ x: 0, y: 0 })
                     }}
                   >
-                    <RotateCcw className="h-4 w-4" />
+                    <RotateCcw className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4" />
                   </Button>
                 </div>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="pt-6">
+          <CardFooter className="pt-4 md:pt-6">
             <Button
               type="button"
               onClick={downloadImage}
-              className="w-full bg-[#FF9900] hover:bg-[#E6890A] text-white h-12 md:h-14 rounded-lg font-medium text-base md:text-lg"
+              className="w-full bg-[#FF9900] hover:bg-[#E6890A] text-white h-10 md:h-14 rounded-lg font-medium text-sm md:text-lg"
               disabled={!templateImg}
             >
-              <Download className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+              <Download className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
               Download Badge
             </Button>
           </CardFooter>
