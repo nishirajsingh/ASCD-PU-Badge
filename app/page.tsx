@@ -1,11 +1,10 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Poppins } from "next/font/google"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { Download, ImageIcon, ZoomIn, ZoomOut, RotateCcw, User } from "lucide-react"
@@ -17,10 +16,7 @@ const poppins = Poppins({
   variable: "--font-poppins",
 })
 
-type TemplateId = "speaking" | "attending"
-
 type Template = {
-  id: TemplateId
   title: string
   src: string
   // Anchor and size defined on a 980×980 baseline, then scaled to native size.
@@ -50,22 +46,12 @@ const NAME_AREA = {
   h: 100, // Height of name area
 }
 
-const TEMPLATES: Template[] = [
-  {
-    id: "speaking",
-    title: "I am Speaking at",
-    src: "/images/Speaker.png",
-    innerAnchorPx: { x: EXACT_FRAME.x, y: EXACT_FRAME.y },
-    innerSizePx: { w: EXACT_FRAME.w, h: EXACT_FRAME.h },
-  },
-  {
-    id: "attending",
-    title: "Thrilled to be attending",
-    src: "/images/Attendee.png",
-    innerAnchorPx: { x: EXACT_FRAME.x, y: EXACT_FRAME.y },
-    innerSizePx: { w: EXACT_FRAME.w, h: EXACT_FRAME.h },
-  },
-]
+const TEMPLATE: Template = {
+  title: "Thrilled to be attending",
+  src: "/images/Attendee.png",
+  innerAnchorPx: { x: EXACT_FRAME.x, y: EXACT_FRAME.y },
+  innerSizePx: { w: EXACT_FRAME.w, h: EXACT_FRAME.h },
+}
 
 // cross‑origin safe loader for canvas export
 function loadImage(src: string) {
@@ -93,8 +79,7 @@ function useTemplateImage(src: string) {
 }
 
 export default function Page() {
-  const [templateId, setTemplateId] = useState<TemplateId>("attending")
-  const template = useMemo(() => TEMPLATES.find((t) => t.id === templateId)!, [templateId])
+  const template = TEMPLATE
   const templateImg = useTemplateImage(template.src)
 
   // Upload
@@ -124,14 +109,6 @@ export default function Page() {
   // Drag-to-pan state
   const [panning, setPanning] = useState(false)
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
-
-  // Reset interactions on template change (prevents “hang”)
-  useEffect(() => {
-    setPanning(false)
-    lastPoint.current = null
-    setZoom(1)
-    setOffset({ x: 0, y: 0 })
-  }, [templateId])
 
   // Canvas drawing
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -374,7 +351,7 @@ export default function Page() {
     const url = canvas.toDataURL("image/png")
     const a = document.createElement("a")
     a.href = url
-    a.download = `${template.id}-badge.png`
+    a.download = "attendee-badge.png"
     document.body.appendChild(a)
     a.click()
     a.remove()
@@ -407,44 +384,7 @@ export default function Page() {
           </p>
         </div>
 
-        {/* Step 1: Template */}
-        <Card className="bg-white border-gray-200 shadow-lg mb-6 sm:mb-8">
-          <CardHeader className="pb-3 sm:pb-6">
-            <CardTitle className="text-gray-900 text-lg sm:text-xl">Choose Badge Type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={templateId} onValueChange={(v) => setTemplateId(v as TemplateId)}>
-              <TabsList className="bg-gray-100 w-full max-w-80 mx-auto h-10 sm:h-12">
-                <TabsTrigger
-                  value="speaking"
-                  className="flex-1 h-8 sm:h-10 data-[state=active]:bg-[#FF9900] data-[state=active]:text-white text-xs sm:text-sm"
-                >
-                  Speaker
-                </TabsTrigger>
-                <TabsTrigger
-                  value="attending"
-                  className="flex-1 h-8 sm:h-10 data-[state=active]:bg-[#FF9900] data-[state=active]:text-white text-xs sm:text-sm"
-                >
-                  Attendee
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="speaking" className="mt-4 sm:mt-6">
-                <div className="bg-orange-50 rounded-lg p-4 sm:p-6 border border-orange-200">
-                  <h3 className="text-base sm:text-lg font-semibold text-[#FF9900] mb-1 sm:mb-2">Speaker Badge</h3>
-                  <p className="text-gray-600 text-sm sm:text-base">This will generate an Speaking post.</p>
-                </div>
-              </TabsContent>
-              <TabsContent value="attending" className="mt-4 sm:mt-6">
-                <div className="bg-orange-50 rounded-lg p-4 sm:p-6 border border-orange-200">
-                  <h3 className="text-base sm:text-lg font-semibold text-[#FF9900] mb-1 sm:mb-2">Attendee Badge</h3>
-                  <p className="text-gray-600 text-sm sm:text-base">This will generate an Attending post.</p>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        {/* Step 2: Upload & Adjust */}
+        {/* Upload & Adjust */}
         <Card className="bg-white border-gray-200 shadow-lg">
           <CardHeader className="pb-4 md:pb-6">
             <CardTitle className="text-gray-900 text-lg md:text-xl">Upload & Customize</CardTitle>
@@ -453,6 +393,22 @@ export default function Page() {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 sm:gap-4 md:gap-5">
+            <div className="bg-orange-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border-2 border-dashed border-orange-300">
+              <div className="mb-2 sm:mb-3 md:mb-4">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[#FF9900] mx-auto mb-1 md:mb-2" />
+                <h3 className="text-sm sm:text-base md:text-lg font-medium text-gray-900 mb-1 md:mb-2 text-center">Enter Your Name</h3>
+                <p className="text-gray-600 text-xs md:text-sm text-center mb-2 sm:mb-3 md:mb-4">This will appear on your badge</p>
+              </div>
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Enter your name"
+                className="w-full px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-transparent text-center font-medium text-xs sm:text-sm md:text-base"
+                maxLength={30}
+              />
+            </div>
+
             <div className="bg-orange-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-8 border-2 border-dashed border-orange-300 text-center">
               <div className="mb-3 sm:mb-4 md:mb-6">
                 <ImageIcon className="h-6 w-6 sm:h-8 sm:w-8 md:h-12 md:w-12 text-[#FF9900] mx-auto mb-1 sm:mb-2 md:mb-3" />
@@ -477,22 +433,6 @@ export default function Page() {
               >
                 Choose Photo
               </Button>
-            </div>
-
-            <div className="bg-orange-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border-2 border-dashed border-orange-300">
-              <div className="mb-2 sm:mb-3 md:mb-4">
-                <User className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[#FF9900] mx-auto mb-1 md:mb-2" />
-                <h3 className="text-sm sm:text-base md:text-lg font-medium text-gray-900 mb-1 md:mb-2 text-center">Enter Your Name</h3>
-                <p className="text-gray-600 text-xs md:text-sm text-center mb-2 sm:mb-3 md:mb-4">This will appear on your badge</p>
-              </div>
-              <input
-                type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                placeholder="Enter your name"
-                className="w-full px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-transparent text-center font-medium text-xs sm:text-sm md:text-base"
-                maxLength={30}
-              />
             </div>
 
             <div
