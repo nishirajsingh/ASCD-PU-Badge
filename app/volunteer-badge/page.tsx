@@ -504,8 +504,8 @@ export default function Page() {
             <Button
               type="button"
               onClick={downloadImage}
-              className="w-full bg-[#FF9900] hover:bg-[#E6890A] text-white h-10 md:h-14 rounded-lg font-medium text-sm md:text-lg"
-              disabled={!templateImg}
+              className="w-full bg-[#FF9900] hover:bg-[#E6890A] text-white h-10 md:h-14 rounded-lg font-medium text-sm md:text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={!templateImg || !userImg || !userName.trim()}
             >
               <Download className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
               Download Badge
