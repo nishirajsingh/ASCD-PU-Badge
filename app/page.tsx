@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Space_Grotesk } from "next/font/google"
+import { Poppins } from "next/font/google"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -10,10 +10,11 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { Download, ImageIcon, ZoomIn, ZoomOut, RotateCcw, User } from "lucide-react"
 
-const spaceGrotesk = Space_Grotesk({
+const poppins = Poppins({
   subsets: ["latin"],
+  weight: ["400", "700"],
   display: "swap",
-  variable: "--font-space-grotesk",
+  variable: "--font-poppins",
 })
 
 type TemplateId = "speaking" | "attending"
@@ -35,18 +36,18 @@ type Template = {
 const BASE = 980
 // Update these coordinates to match your new template's photo area
 const EXACT_FRAME = {
-  x: 602, // X position of photo area (adjust for your template)
-  y: 443, // Y position of photo area (adjust for your template)
-  w: 230, // Width of photo area
-  h: 250, // Height of photo area
+  x: 540, // X position of photo area (adjust for your template)
+  y: 390, // Y position of photo area (adjust for your template)
+  w: 270, // Width of photo area
+  h: 280, // Height of photo area
 }
 
 // Update these coordinates to match your template's name area
 const NAME_AREA = {
-  x: 565, // X position of name area (adjust for your template)
-  y: 700, // Y position of name area (adjust for your template)
-  w: 300, // Width of name area
-  h: 95, // Height of name area
+  x: 500, // X position of name area (adjust for your template)
+  y: 680, // Y position of name area (adjust for your template)
+  w: 350, // Width of name area
+  h: 100, // Height of name area
 }
 
 const TEMPLATES: Template[] = [
@@ -217,35 +218,38 @@ export default function Page() {
       ctx.clip()
       
       let fontSize = Math.round(blockH * 0.35) // Start with 35% of block height
-      ctx.font = `bold ${fontSize}px "Space Grotesk", sans-serif`
+      ctx.font = `bold ${fontSize}px "Poppins", sans-serif`
       ctx.fillStyle = "#000000"
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
       
-      const words = userName.trim().split(' ')
       const textX = blockX + blockW / 2
+      const lineHeight = fontSize * 1.2
       
-      // Check if text fits in one line
-      const fullText = words.join(' ')
-      let textWidth = ctx.measureText(fullText).width
+      // Split text at 17 characters
+      const text = userName.trim()
+      const lines: string[] = []
       
-      // Reduce font size if text is too wide
-      while (textWidth > blockW * 0.9 && fontSize > 12) {
-        fontSize -= 2
-        ctx.font = `bold ${fontSize}px "Space Grotesk", sans-serif`
-        textWidth = ctx.measureText(fullText).width
+      if (text.length <= 17) {
+        lines.push(text)
+      } else {
+        // Find the best break point around 17 characters
+        let breakPoint = 17
+        while (breakPoint > 0 && text[breakPoint] !== ' ') {
+          breakPoint--
+        }
+        if (breakPoint === 0) breakPoint = 17 // Force break if no space found
+        
+        lines.push(text.substring(0, breakPoint).trim())
+        lines.push(text.substring(breakPoint).trim())
       }
       
-      // If still too wide, split into two lines
-      if (textWidth > blockW * 0.9 && words.length > 1) {
-        const lastWord = words[words.length - 1]
-        const firstLine = words.slice(0, -1).join(' ')
-        const lineHeight = fontSize * 1.2
-        
-        ctx.fillText(firstLine, textX, blockY + blockH / 2 - lineHeight / 2)
-        ctx.fillText(lastWord, textX, blockY + blockH / 2 + lineHeight / 2)
+      // Draw lines
+      if (lines.length === 1) {
+        ctx.fillText(lines[0], textX, blockY + blockH / 2)
       } else {
-        ctx.fillText(fullText, textX, blockY + blockH / 2)
+        ctx.fillText(lines[0], textX, blockY + blockH / 2 - lineHeight / 2)
+        ctx.fillText(lines[1], textX, blockY + blockH / 2 + lineHeight / 2)
       }
       
       ctx.restore()
@@ -283,11 +287,37 @@ export default function Page() {
     }
   }
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!panning || !lastPoint.current) return
+    if (!panning || !lastPoint.current || !userImg || !templateImg) return
     const dx = e.clientX - lastPoint.current.x
     const dy = e.clientY - lastPoint.current.y
     lastPoint.current = { x: e.clientX, y: e.clientY }
-    setOffset((prev) => ({ x: prev.x + dx, y: prev.y + dy }))
+    
+    setOffset((prev) => {
+      const W = templateImg.naturalWidth || templateImg.width
+      const H = templateImg.naturalHeight || templateImg.height
+      const scaleX = W / BASE
+      const scaleY = H / BASE
+      const inner = {
+        w: Math.round(template.innerSizePx.w * scaleX),
+        h: Math.round(template.innerSizePx.h * scaleY),
+      }
+      
+      const iw = userImg.naturalWidth || userImg.width
+      const ih = userImg.naturalHeight || userImg.height
+      const base = Math.max(inner.w / iw, inner.h / ih)
+      const scale = base * zoom
+      const drawW = iw * scale
+      const drawH = ih * scale
+      
+      // Calculate bounds
+      const maxOffsetX = Math.max(0, (drawW - inner.w) / 2)
+      const maxOffsetY = Math.max(0, (drawH - inner.h) / 2)
+      
+      const newX = Math.max(-maxOffsetX, Math.min(maxOffsetX, prev.x + dx))
+      const newY = Math.max(-maxOffsetY, Math.min(maxOffsetY, prev.y + dy))
+      
+      return { x: newX, y: newY }
+    })
   }
   const endPan = (e: React.PointerEvent) => {
     setPanning(false)
@@ -326,7 +356,14 @@ export default function Page() {
         canvasY >= inner.y && canvasY <= inner.y + inner.h) {
       e.preventDefault()
       const delta = e.deltaY > 0 ? -0.05 : 0.05
-      setZoom((z) => clamp(Number.parseFloat((z + delta).toFixed(2)), 1, 3))
+      setZoom((z) => {
+        const newZoom = Math.max(1, Math.min(3, Number.parseFloat((z + delta).toFixed(2))))
+        // Reset offset when zooming to prevent going out of bounds
+        if (newZoom !== z) {
+          setOffset({ x: 0, y: 0 })
+        }
+        return newZoom
+      })
     }
   }
 
@@ -345,8 +382,8 @@ export default function Page() {
 
   return (
     <main
-      className={cn("min-h-dvh bg-white text-gray-900 antialiased", spaceGrotesk.variable)}
-      style={{ fontFamily: "var(--font-space-grotesk)" }}
+      className={cn("min-h-dvh bg-white text-gray-900 antialiased", poppins.variable)}
+      style={{ fontFamily: "var(--font-poppins)" }}
     >
       <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
         <header className="mb-6 md:mb-8 flex items-center justify-between gap-4">
