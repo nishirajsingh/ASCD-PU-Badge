@@ -372,8 +372,22 @@ export default function Page() {
   const proceedToLinkedIn = () => {
     const caption = `🎉 Excited to attend 𝗔𝗪𝗦 𝗦𝘁𝘂𝗱𝗲𝗻𝘁 𝗖𝗼𝗺𝗺𝘂𝗻𝗶𝘁𝘆 𝗗𝗮𝘆 𝟮𝟬𝟮𝟱 at 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆!\n\nA full day of learning in 𝗰𝗹𝗼𝘂𝗱, 𝗗𝗮𝘁𝗮, 𝗔𝗜, 𝗗𝗲𝘃𝗢𝗽𝘀 and more.\n\nLooking forward to gaining real insights, exploring tech careers and connecting with the AWS community.\n\n📅 𝟭𝟯 𝗗𝗲𝗰 𝟮𝟬𝟮𝟱\n📍 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆, 𝗩𝗮𝗱𝗼𝗱𝗮𝗿𝗮, 𝗚𝘂𝗷𝗮𝗿𝗮𝘁\n🎟 Tickets: cloudclubpu.me\n\n#AWS #AWSSTUDENTCOMMUNITYDAY #ParulUniversity #CloudComputing #AI #DevOps #DataEngineering #ASCDPU`
     
-    const linkedInUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(caption)}`
-    window.open(linkedInUrl, '_blank')
+    // Copy text to clipboard for manual paste
+    navigator.clipboard.writeText(caption).catch(() => {})
+    
+    // Detect if on mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    
+    if (isMobile) {
+      // For mobile app, use intent URL
+      const linkedInIntent = `intent://linkedin.com/sharing/share-offsite/?text=${encodeURIComponent(caption)}#Intent;package=com.linkedin.android;scheme=https;end`
+      window.location.href = linkedInIntent
+    } else {
+      // For web, open LinkedIn
+      const linkedInWebUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(caption)}`
+      window.open(linkedInWebUrl, '_blank')
+    }
+    
     setShowLinkedInPopup(false)
   }
 
@@ -567,7 +581,7 @@ export default function Page() {
                 <img
                   src="/images/Share-on-linkedin.gif"
                   alt="How to share on LinkedIn"
-                  className="w-full max-w-xs mx-auto rounded-lg shadow-md"
+                  className="w-full mx-auto rounded-lg shadow-md"
                 />
               </div>
               <div className="text-center mb-6">
