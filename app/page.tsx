@@ -617,44 +617,44 @@ export default function Page() {
 
       {/* LinkedIn Share Popup */}
       {showLinkedInPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full mx-4 shadow-2xl border border-gray-200">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Share on LinkedIn</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
+          <div className="bg-white rounded-lg w-full mx-2 shadow-2xl border border-gray-200 md:max-w-md max-w-xs">
+            <div className="flex items-center justify-between p-3 border-b border-gray-200">
+              <h3 className="text-sm md:text-lg font-semibold text-gray-900">Share on LinkedIn</h3>
               <button
                 onClick={() => setShowLinkedInPopup(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4 md:h-5 md:w-5" />
               </button>
             </div>
-            <div className="p-6">
-              <div className="text-center mb-6">
+            <div className="p-3 md:p-6">
+              <div className="text-center mb-3 md:mb-6">
                 <img
-                  src="/images/Share-on-linkedin.gif"
+                  src={`/images/Share-on-linkedin${/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? '-mobile' : ''}.gif`}
                   alt="How to share on LinkedIn"
-                  className="w-full mx-auto rounded-lg shadow-md"
+                  className="w-3/4 md:w-full mx-auto rounded-lg shadow-md"
                 />
               </div>
-              <div className="text-center mb-6">
-                <h4 className="text-base font-medium text-gray-900 mb-2">
+              <div className="text-center mb-3 md:mb-6">
+                <h4 className="text-sm md:text-base font-medium text-gray-900 mb-1 md:mb-2">
                   How to Share on LinkedIn
                 </h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
                   Click OK to open LinkedIn. Upload your downloaded badge image and share it with your network!
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 md:gap-3">
                 <Button
                   onClick={() => setShowLinkedInPopup(false)}
                   variant="outline"
-                  className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 text-xs md:text-sm h-8 md:h-10"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={proceedToLinkedIn}
-                  className="flex-1 bg-[#0077B5] hover:bg-[#005885] text-white"
+                  className="flex-1 bg-[#0077B5] hover:bg-[#005885] text-white text-xs md:text-sm h-8 md:h-10"
                 >
                   OK
                 </Button>
