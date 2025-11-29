@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-import { Download, ImageIcon, ZoomIn, ZoomOut, RotateCcw, User } from "lucide-react"
+import { Download, ImageIcon, ZoomIn, ZoomOut, RotateCcw, User, Share2, X } from "lucide-react"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -105,6 +105,8 @@ export default function Page() {
   const [zoom, setZoom] = useState(1) // 1 = cover fit
   const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   const [userName, setUserName] = useState("")
+  const [hasDownloaded, setHasDownloaded] = useState(false)
+  const [showLinkedInPopup, setShowLinkedInPopup] = useState(false)
 
   // Drag-to-pan state
   const [panning, setPanning] = useState(false)
@@ -355,6 +357,24 @@ export default function Page() {
     document.body.appendChild(a)
     a.click()
     a.remove()
+    setHasDownloaded(true)
+  }
+
+  // Share on LinkedIn
+  const shareOnLinkedIn = () => {
+    if (!hasDownloaded) {
+      alert("Please download the badge first!")
+      return
+    }
+    setShowLinkedInPopup(true)
+  }
+
+  const proceedToLinkedIn = () => {
+    const caption = `🎉 Excited to attend 𝗔𝗪𝗦 𝗦𝘁𝘂𝗱𝗲𝗻𝘁 𝗖𝗼𝗺𝗺𝘂𝗻𝗶𝘁𝘆 𝗗𝗮𝘆 𝟮𝟬𝟮𝟱 at 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆!\n\nA full day of learning in 𝗰𝗹𝗼𝘂𝗱, 𝗗𝗮𝘁𝗮, 𝗔𝗜, 𝗗𝗲𝘃𝗢𝗽𝘀 and more.\n\nLooking forward to gaining real insights, exploring tech careers and connecting with the AWS community.\n\n📅 𝟭𝟯 𝗗𝗲𝗰 𝟮𝟬𝟮𝟱\n📍 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆, 𝗩𝗮𝗱𝗼𝗱𝗮𝗿𝗮, 𝗚𝘂𝗷𝗮𝗿𝗮𝘁\n🎟 Tickets: cloudclubpu.me\n\n#AWS #AWSSTUDENTCOMMUNITYDAY #ParulUniversity #CloudComputing #AI #DevOps #DataEngineering #ASCDPU`
+    
+    const linkedInUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(caption)}`
+    window.open(linkedInUrl, '_blank')
+    setShowLinkedInPopup(false)
   }
 
   return (
@@ -500,7 +520,7 @@ export default function Page() {
               </div>
             </div>
           </CardContent>
-          <CardFooter className="pt-4 md:pt-6">
+          <CardFooter className="pt-4 md:pt-6 flex flex-col gap-3">
             <Button
               type="button"
               onClick={downloadImage}
@@ -509,6 +529,15 @@ export default function Page() {
             >
               <Download className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
               Download Badge
+            </Button>
+            <Button
+              type="button"
+              onClick={shareOnLinkedIn}
+              className="w-full bg-[#0077B5] hover:bg-[#005885] text-white h-10 md:h-14 rounded-lg font-medium text-sm md:text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={!templateImg || !userImg || !userName.trim()}
+            >
+              <Share2 className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
+              Share on LinkedIn
             </Button>
           </CardFooter>
         </Card>
@@ -519,6 +548,55 @@ export default function Page() {
           </p>
         </footer>
       </div>
+
+      {/* LinkedIn Share Popup */}
+      {showLinkedInPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full mx-4 shadow-2xl border border-gray-200">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Share on LinkedIn</h3>
+              <button
+                onClick={() => setShowLinkedInPopup(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <img
+                  src="/images/Share-on-linkedin.gif"
+                  alt="How to share on LinkedIn"
+                  className="w-full max-w-xs mx-auto rounded-lg shadow-md"
+                />
+              </div>
+              <div className="text-center mb-6">
+                <h4 className="text-base font-medium text-gray-900 mb-2">
+                  How to Share on LinkedIn
+                </h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Click OK to open LinkedIn. Upload your downloaded badge image and share it with your network!
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setShowLinkedInPopup(false)}
+                  variant="outline"
+                  className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={proceedToLinkedIn}
+                  className="flex-1 bg-[#0077B5] hover:bg-[#005885] text-white"
+                >
+                  OK
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
