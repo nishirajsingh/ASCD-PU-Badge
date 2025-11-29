@@ -617,8 +617,8 @@ export default function Page() {
 
       {/* LinkedIn Share Popup */}
       {showLinkedInPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
-          <div className="bg-white rounded-lg w-full mx-2 shadow-2xl border border-gray-200 md:max-w-md max-w-xs">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 overflow-y-auto">
+          <div className="bg-white rounded-lg w-full mx-2 shadow-2xl border border-gray-200 md:max-w-md max-w-xs my-auto">
             <div className="flex items-center justify-between p-3 border-b border-gray-200">
               <h3 className="text-sm md:text-lg font-semibold text-gray-900">Share on LinkedIn</h3>
               <button
