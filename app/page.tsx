@@ -369,27 +369,79 @@ export default function Page() {
     setShowLinkedInPopup(true)
   }
 
-  const proceedToLinkedIn = () => {
-    const caption = `🎉 Excited to attend 𝗔𝗪𝗦 𝗦𝘁𝘂𝗱𝗲𝗻𝘁 𝗖𝗼𝗺𝗺𝘂𝗻𝗶𝘁𝘆 𝗗𝗮𝘆 𝟮𝟬𝟮𝟱 at 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆!\n\nA full day of learning in 𝗰𝗹𝗼𝘂𝗱, 𝗗𝗮𝘁𝗮, 𝗔𝗜, 𝗗𝗲𝘃𝗢𝗽𝘀 and more.\n\nLooking forward to gaining real insights, exploring tech careers and connecting with the AWS community.\n\n📅 𝟭𝟯 𝗗𝗲𝗰 𝟮𝟬𝟮𝟱\n📍 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆, 𝗩𝗮𝗱𝗼𝗱𝗮𝗿𝗮, 𝗚𝘂𝗷𝗮𝗿𝗮𝘁\n🎟 Tickets: cloudclubpu.me\n\n#AWS #AWSSTUDENTCOMMUNITYDAY #ParulUniversity #CloudComputing #AI #DevOps #DataEngineering #ASCDPU`
-    
-    // Copy text to clipboard for manual paste
-    navigator.clipboard.writeText(caption).catch(() => {})
-    
-    // Detect if on mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-    
-    if (isMobile) {
-      // For mobile app, use intent URL
-      const linkedInIntent = `intent://linkedin.com/sharing/share-offsite/?text=${encodeURIComponent(caption)}#Intent;package=com.linkedin.android;scheme=https;end`
-      window.location.href = linkedInIntent
-    } else {
-      // For web, open LinkedIn
-      const linkedInWebUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(caption)}`
-      window.open(linkedInWebUrl, '_blank')
+  const proceedToLinkedIn = async () => {
+    const caption = `🎉 Excited to attend 𝗔𝗪𝗦 𝗦𝘁𝘂𝗱𝗲𝗻𝘁 𝗖𝗼𝗺𝗺𝘂𝗻𝗶𝘁𝘆 𝗗𝗮𝘆 𝟮𝟬𝟮𝟱 at 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆!\n\nA full day of learning in 𝗰𝗹𝗼𝘂𝗱, 𝗗𝗮𝘁𝗮, 𝗔𝗜, 𝗗𝗲𝘃𝗢𝗽𝘀 and more.\n\nLooking forward to gaining real insights, exploring tech careers and connecting with the AWS community.\n\n📅 𝟭𝟯 𝗗𝗲𝗰 𝟮𝟬𝟮𝟱\n📍 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆, 𝗩𝗮𝗱𝗼𝗱𝗮𝗿𝗮, 𝗚𝘂𝗷𝗮𝗿𝗮𝘁\n🎟 Tickets: cloudclubpu.me\n\n#AWS #AWSSTUDENTCOMMUNITYDAY #ParulUniversity #CloudComputing #AI #DevOps #DataEngineering #ASCDPU`;
+  
+    // Always copy to clipboard (so user can paste if app won't prefill)
+    try {
+      await navigator.clipboard.writeText(caption);
+      // optionally notify user visually in your UI that it's copied
+      console.log('Caption copied to clipboard');
+    } catch (e) {
+      console.warn('Clipboard write failed', e);
     }
-    
-    setShowLinkedInPopup(false)
-  }
+  
+    // If Web Share API is available, prefer it — opens native share sheet where LinkedIn appears
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: caption });
+        setShowLinkedInPopup(false);
+        return;
+      } catch (err) {
+        // user cancelled or share failed — fall through to other fallbacks
+        console.warn('navigator.share failed', err);
+      }
+    }
+  
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  
+    const encodedCaption = encodeURIComponent(caption);
+    const cloudUrl = 'https://cloudclubpu.me'; // LinkedIn share endpoints accept a URL parameter
+  
+    // Try LinkedIn app deep-link (may or may not be supported on device)
+    // summary param often used as post body when using shareArticle scheme
+    const linkedinAppUrl = `linkedin://shareArticle?mini=true&url=${encodeURIComponent(cloudUrl)}&summary=${encodedCaption}`;
+  
+    // Android intent attempt — best-effort. Some Android devices/apps will respond.
+    const androidIntent = `intent://share?text=${encodedCaption}#Intent;action=android.intent.action.SEND;type=text/plain;package=com.linkedin.android;end`;
+  
+    // LinkedIn web share URL (works in browser). It doesn't accept a free text body, only a URL,
+    // so we open it and user can paste (clipboard already has caption).
+    const linkedinWebShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(cloudUrl)}`;
+  
+    try {
+      if (isAndroid) {
+        // Try intent first (best chance to open LinkedIn app on Android)
+        window.location.href = androidIntent;
+  
+        // Also try app scheme shortly after as a fallback if intent didn't land in app.
+        setTimeout(() => {
+          window.location.href = linkedinAppUrl;
+        }, 500);
+      } else if (isIOS) {
+        // Try the linkedin URI scheme on iOS (best-effort)
+        // On iOS the app may handle the linkedin:// scheme
+        window.location.href = linkedinAppUrl;
+  
+        // After a short delay, fallback to web share page
+        setTimeout(() => {
+          window.open(linkedinWebShare, '_blank');
+        }, 700);
+      } else {
+        // Desktop browsers - open LinkedIn web feed. Clipboard already has the caption for manual paste.
+        // LinkedIn's web interface does not accept a direct text query param for post body, so we open feed.
+        const linkedInWebUrl = `https://www.linkedin.com/feed/?shareActive=true`;
+        window.open(linkedInWebUrl, '_blank');
+      }
+    } catch (e) {
+      console.error('Fallback navigation failed, opening web share', e);
+      window.open(linkedinWebShare, '_blank');
+    } finally {
+      setShowLinkedInPopup(false);
+    }
+  };
+  
 
   return (
     <main
