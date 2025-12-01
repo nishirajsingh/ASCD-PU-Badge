@@ -370,7 +370,7 @@ export default function Page() {
   }
 
   const proceedToLinkedIn = async () => {
-    const caption = `🎉 Excited to attend 𝗔𝗪𝗦 𝗦𝘁𝘂𝗱𝗲𝗻𝘁 𝗖𝗼𝗺𝗺𝘂𝗻𝗶𝘁𝘆 𝗗𝗮𝘆 𝟮𝟬𝟮𝟱 at 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆!\n\nA full day of learning in 𝗰𝗹𝗼𝘂𝗱, 𝗗𝗮𝘁𝗮, 𝗔𝗜, 𝗗𝗲𝘃𝗢𝗽𝘀 and more.\n\nLooking forward to gaining real insights, exploring tech careers and connecting with the AWS community.\n\n📅 𝟭𝟯 𝗗𝗲𝗰 𝟮𝟬𝟮𝟱\n📍 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆, 𝗩𝗮𝗱𝗼𝗱𝗮𝗿𝗮, 𝗚𝘂𝗷𝗮𝗿𝗮𝘁\n🎟 Tickets: cloudclubpu.me\n\n#AWS #AWSSTUDENTCOMMUNITYDAY #ParulUniversity #CloudComputing #AI #DevOps #DataEngineering #ASCDPU`;
+    const caption = `𝗜'𝗺 𝗮𝘁𝘁𝗲𝗻𝗱𝗶𝗻𝗴 𝗔𝗪𝗦 𝗦𝘁𝘂𝗱𝗲𝗻𝘁 𝗖𝗼𝗺𝗺𝘂𝗻𝗶𝘁𝘆 𝗗𝗮𝘆 𝟮𝟬𝟮𝟱 at 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆! 🌟\n✨ Looking forward to gaining real insights, exploring tech careers, and connecting with the AWS community.\n\nI am attending are you ?\n\nSee you on 13 Dec 2025 at Parul University! 🔥\n\n⏰ | 𝗗𝗮𝘁𝗲 : 𝟭𝟯-𝗗𝗲𝗰𝗲𝗺𝗯𝗲𝗿-𝟮𝟬𝟮𝟱\n🌆 | 𝗘𝘃𝗲𝗻𝘁 : 𝗔𝗪𝗦 𝗦𝘁𝘂𝗱𝗲𝗻𝘁 𝗖𝗼𝗺𝗺𝘂𝗻𝗶𝘁𝘆 𝗗𝗮𝘆 \n📍 | 𝗟𝗼𝗰𝗮𝘁𝗶𝗼𝗻 : 𝗣𝗮𝗿𝘂𝗹 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆\n😎 | 𝗘𝘃𝗲𝗻𝘁 𝗯𝘆 : AWS Cloud Club at Parul University\n🎟 | 𝗕𝗼𝗼𝗸 𝘆𝗼𝘂𝗿 𝘁𝗶𝗰𝗸𝗲𝘁𝘀 𝗮𝘁 : cloudclubpu.me\n\n#AWSSTUDENTCOMMUNITYDAY #ParulUniversity #AWSSTUDENTCOMMUNITYDAYPARULUNIVERSITY #ASCDPU #AWS`;
   
     const isAndroid = /Android/i.test(navigator.userAgent);
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
