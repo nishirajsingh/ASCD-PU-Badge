@@ -203,19 +203,19 @@ export default function Page() {
       const textX = blockX + blockW / 2
       const lineHeight = fontSize * 1.2
       
-      // Split text at 17 characters
+      // Split text at 15 characters
       const text = userName.trim()
       const lines: string[] = []
       
-      if (text.length <= 17) {
+      if (text.length <= 15) {
         lines.push(text)
       } else {
         // Find the best break point around 17 characters
-        let breakPoint = 17
+        let breakPoint = 15
         while (breakPoint > 0 && text[breakPoint] !== ' ') {
           breakPoint--
         }
-        if (breakPoint === 0) breakPoint = 17 // Force break if no space found
+        if (breakPoint === 0) breakPoint = 15 // Force break if no space found
         
         lines.push(text.substring(0, breakPoint).trim())
         lines.push(text.substring(breakPoint).trim())
